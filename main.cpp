@@ -4,11 +4,11 @@
 #include <iomanip>
 
 typedef struct ConditionCodes {
-    uint8_t     z:1;
-    uint8_t     s:1;
-    uint8_t     p:1;
-    uint8_t     cy:1;
-    uint8_t     ac:1;
+    uint8_t     z:1;    //(zero) set to 1 when the result is equal to zero
+    uint8_t     s:1;    //(sign) set to 1 when bit 7 (the most significant bit or MSB) of the math instruction is set
+    uint8_t     p:1;    //(parity) is set when the answer has even parity, clear when odd parity
+    uint8_t     cy:1;   //(carry) set to 1 when the instruction resulted in a carry out or borrow into the high order bit
+    uint8_t     ac:1;   //(auxillary carry) is used mostly for BCD (binary coded decimal) math
     uint8_t     pad:3;
 } ConditionCodes;
 
@@ -34,12 +34,27 @@ void UnimplementedInstruction(State8080* state) {
     exit(1);
 }
 
+bool Parity(const int val) {
+    uint8_t one_bits = 0;
+    for (int i = 0; i < 8; i++) {
+        one_bits += ((val >> i) & 1);
+    }
+
+    return (one_bits & 1) == 0;
+}
+
 int Emulate8080Op(State8080* state) {
     unsigned char *opcode = &state->memory[state->pc];
+    uint16_t answer;
+    uint16_t offset;
 
     switch (*opcode) {
-        case 0x00: UnimplementedInstruction(state); break;
-        case 0x01: UnimplementedInstruction(state); break;
+        case 0x00: break;   //NOP
+        case 0x01:          //LXI   B,word
+            state->c = opcode[1];
+            state->b = opcode[2];
+            state->pc+=2;
+            break;
         case 0x02: UnimplementedInstruction(state); break;
         case 0x03: UnimplementedInstruction(state); break;
         case 0x04: UnimplementedInstruction(state); break;
@@ -166,13 +181,63 @@ int Emulate8080Op(State8080* state) {
         case 0x7d: UnimplementedInstruction(state); break;
         case 0x7e: UnimplementedInstruction(state); break;
         case 0x7f: UnimplementedInstruction(state); break;
-        case 0x80: UnimplementedInstruction(state); break;
-        case 0x81: UnimplementedInstruction(state); break;
-        case 0x82: UnimplementedInstruction(state); break;
-        case 0x83: UnimplementedInstruction(state); break;
-        case 0x84: UnimplementedInstruction(state); break;
-        case 0x85: UnimplementedInstruction(state); break;
-        case 0x86: UnimplementedInstruction(state); break;
+        case 0x80:      //ADD B
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->b);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x81:      //ADD C
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->c);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x82:      //ADD D
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->d);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x83:      //ADD E
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->e);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x84:      //ADD H
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->h);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x85:      //ADD L
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->l);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x86:      //ADD M
+            offset = (state->h << 8) | (state->l);
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->memory[offset]);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
         case 0x87: UnimplementedInstruction(state); break;
         case 0x88: UnimplementedInstruction(state); break;
         case 0x89: UnimplementedInstruction(state); break;
@@ -236,7 +301,14 @@ int Emulate8080Op(State8080* state) {
         case 0xc3: UnimplementedInstruction(state); break;
         case 0xc4: UnimplementedInstruction(state); break;
         case 0xc5: UnimplementedInstruction(state); break;
-        case 0xc6: UnimplementedInstruction(state); break;
+        case 0xc6:      //ADI
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (opcode[1]);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
         case 0xc7: UnimplementedInstruction(state); break;
         case 0xc8: UnimplementedInstruction(state); break;
         case 0xc9: UnimplementedInstruction(state); break;
@@ -294,6 +366,9 @@ int Emulate8080Op(State8080* state) {
         case 0xfd: UnimplementedInstruction(state); break;
         case 0xfe: UnimplementedInstruction(state); break;
         case 0xff: UnimplementedInstruction(state); break;
+        default:
+            std::cout << "Error" << std::endl;
+            break;
     }
 
     state->pc++;
