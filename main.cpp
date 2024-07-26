@@ -238,23 +238,144 @@ int Emulate8080Op(State8080* state) {
             state->cc.p = Parity(answer&0xff);
             state->a = answer & 0xff;
             break;
-        case 0x87: UnimplementedInstruction(state); break;
-        case 0x88: UnimplementedInstruction(state); break;
-        case 0x89: UnimplementedInstruction(state); break;
-        case 0x8a: UnimplementedInstruction(state); break;
-        case 0x8b: UnimplementedInstruction(state); break;
-        case 0x8c: UnimplementedInstruction(state); break;
-        case 0x8d: UnimplementedInstruction(state); break;
-        case 0x8e: UnimplementedInstruction(state); break;
-        case 0x8f: UnimplementedInstruction(state); break;
-        case 0x90: UnimplementedInstruction(state); break;
-        case 0x91: UnimplementedInstruction(state); break;
-        case 0x92: UnimplementedInstruction(state); break;
-        case 0x93: UnimplementedInstruction(state); break;
-        case 0x94: UnimplementedInstruction(state); break;
-        case 0x95: UnimplementedInstruction(state); break;
-        case 0x96: UnimplementedInstruction(state); break;
-        case 0x97: UnimplementedInstruction(state); break;
+        case 0x87:      //ADD A
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->a);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x88:      //ADC B
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->b) + state->cc.cy;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x89:      //ADC C
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->c) + state->cc.cy;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x8a:      //ADC D
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->d) + state->cc.cy;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x8b:      //ADC E
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->e) + state->cc.cy;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x8c:      //ADC H
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->h) + state->cc.cy;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x8d:      //ADC L
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->l) + state->cc.cy;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x8e:      //ADC M
+            offset = (state->h << 8) | (state->l);
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->memory[offset]) + state->cc.cy;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x8f:      //ADC A
+            answer = static_cast<uint16_t> (state->a) + static_cast<uint16_t> (state->a) + state->cc.cy;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x90:      //SUB B
+            answer = static_cast<uint16_t> (state->a) - static_cast<uint16_t> (state->b);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x91:      //SUB C
+            answer = static_cast<uint16_t> (state->a) - static_cast<uint16_t> (state->c);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x92:       //SUB D
+            answer = static_cast<uint16_t> (state->a) - static_cast<uint16_t> (state->d);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x93:
+            answer = static_cast<uint16_t> (state->a) - static_cast<uint16_t> (state->e);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x94:      //SUB H
+            answer = static_cast<uint16_t> (state->a) - static_cast<uint16_t> (state->h);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x95:      //SUB L
+            answer = static_cast<uint16_t> (state->a) - static_cast<uint16_t> (state->l);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x96:      //SUB M
+            offset = (state->h << 8) | (state->l);
+            answer = static_cast<uint16_t> (state->a) - static_cast<uint16_t> (state->memory[offset]);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x97:      //SUB A
+            answer = static_cast<uint16_t> (state->a) - static_cast<uint16_t> (state->a);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
         case 0x98: UnimplementedInstruction(state); break;
         case 0x99: UnimplementedInstruction(state); break;
         case 0x9a: UnimplementedInstruction(state); break;
