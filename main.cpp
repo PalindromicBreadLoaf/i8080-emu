@@ -47,9 +47,7 @@ int Emulate8080Op(State8080* state) {
     unsigned char *opcode = &state->memory[state->pc];
     uint16_t answer;
     uint16_t offset;
-    uint16_t bc;
-    uint16_t de;
-    uint16_t hl;
+    uint16_t bc, de, hl, hi;
 
     switch (*opcode) {
         case 0x00: break;   //NOP
@@ -65,16 +63,52 @@ int Emulate8080Op(State8080* state) {
             state->b = (bc >> 8) & 0xff;
             state->c = bc & 0xff;
             break;
-        case 0x04: UnimplementedInstruction(state); break;
-        case 0x05: UnimplementedInstruction(state); break;
+        case 0x04:          //INR B
+            answer = static_cast<uint16_t> (state->b) + 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->b = answer & 0xff;
+            break;
+        case 0x05:          //DCR B
+            answer = static_cast<uint16_t> (state->b) - 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->b = answer & 0xff;
+            break;
         case 0x06: UnimplementedInstruction(state); break;
         case 0x07: UnimplementedInstruction(state); break;
         case 0x08: UnimplementedInstruction(state); break;
-        case 0x09: UnimplementedInstruction(state); break;
+        case 0x09:          //DAD B
+            bc = (static_cast<uint16_t>(state->b) << 8) | state->c;
+            hl = (static_cast<uint16_t>(state->h) << 8) | state->l;
+            hl += bc;
+            state->cc.cy = (hl>0xff);
+            state->h = (hl >> 8) & 0xff;
+            state->l = hl & 0xff;
+            break;
         case 0x0a: UnimplementedInstruction(state); break;
-        case 0x0b: UnimplementedInstruction(state); break;
-        case 0x0c: UnimplementedInstruction(state); break;
-        case 0x0d: UnimplementedInstruction(state); break;
+        case 0x0b:          //DCX B
+            bc = (static_cast<uint16_t>(state->b) << 8) | state->c;
+            bc-=1;
+            state->b = (bc >> 8) & 0xff;
+            state->c = bc & 0xff;
+            break;
+        case 0x0c:          //INR C
+            answer = static_cast<uint16_t> (state->c) + 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->c = answer & 0xff;
+            break;
+        case 0x0d:          //DCR C
+            answer = static_cast<uint16_t> (state->c) - 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->c = answer & 0xff;
+            break;
         case 0x0e: UnimplementedInstruction(state); break;
         case 0x0f: UnimplementedInstruction(state); break;
         case 0x10: UnimplementedInstruction(state); break;
@@ -86,16 +120,52 @@ int Emulate8080Op(State8080* state) {
             state->d = (de >> 8) & 0xff;
             state->e = de & 0xff;
             break;
-        case 0x14: UnimplementedInstruction(state); break;
-        case 0x15: UnimplementedInstruction(state); break;
+        case 0x14:          //INR D
+            answer = static_cast<uint16_t> (state->d) + 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->d = answer & 0xff;
+            break;
+        case 0x15:          //DCR D
+            answer = static_cast<uint16_t> (state->d) - 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->d = answer & 0xff;
+            break;
         case 0x16: UnimplementedInstruction(state); break;
         case 0x17: UnimplementedInstruction(state); break;
         case 0x18: UnimplementedInstruction(state); break;
-        case 0x19: UnimplementedInstruction(state); break;
+        case 0x19:          //DAD D
+            de = (static_cast<uint16_t>(state->d) << 8) | state->e;
+            hl = (static_cast<uint16_t>(state->h) << 8) | state->l;
+            hl += de;
+            state->cc.cy = (hl>0xff);
+            state->h = (hl >> 8) & 0xff;
+            state->l = hl & 0xff;
+            break;
         case 0x1a: UnimplementedInstruction(state); break;
-        case 0x1b: UnimplementedInstruction(state); break;
-        case 0x1c: UnimplementedInstruction(state); break;
-        case 0x1d: UnimplementedInstruction(state); break;
+        case 0x1b:          //DCX D
+            de = (static_cast<uint16_t>(state->d) << 8) | state->e;
+            de-=1;
+            state->d = (de >> 8) & 0xff;
+            state->e = de & 0xff;
+            break;
+        case 0x1c:          //INR E
+            answer = static_cast<uint16_t> (state->e) + 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->e = answer & 0xff;
+            break;
+        case 0x1d:          //DCR E
+            answer = static_cast<uint16_t> (state->e) - 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->e = answer & 0xff;
+            break;
         case 0x1e: UnimplementedInstruction(state); break;
         case 0x1f: UnimplementedInstruction(state); break;
         case 0x20: UnimplementedInstruction(state); break;
@@ -107,16 +177,52 @@ int Emulate8080Op(State8080* state) {
             state->h = (hl >> 8) & 0xff;
             state->l = hl & 0xff;
             break;
-        case 0x24: UnimplementedInstruction(state); break;
-        case 0x25: UnimplementedInstruction(state); break;
+        case 0x24:          //INR H
+            answer = static_cast<uint16_t> (state->h) + 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->h = answer & 0xff;
+            break;
+        case 0x25:          //DCR H
+            answer = static_cast<uint16_t> (state->h) - 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->h = answer & 0xff;
+            break;
         case 0x26: UnimplementedInstruction(state); break;
         case 0x27: UnimplementedInstruction(state); break;
         case 0x28: UnimplementedInstruction(state); break;
-        case 0x29: UnimplementedInstruction(state); break;
+        case 0x29:          //DAD H
+            hi = (static_cast<uint16_t>(state->b) << 8) | state->c;
+            hl = (static_cast<uint16_t>(state->h) << 8) | state->l;
+            hl += hi;
+            state->cc.cy = (hl>0xff);
+            state->h = (hl >> 8) & 0xff;
+            state->l = hl & 0xff;
+            break;
         case 0x2a: UnimplementedInstruction(state); break;
-        case 0x2b: UnimplementedInstruction(state); break;
-        case 0x2c: UnimplementedInstruction(state); break;
-        case 0x2d: UnimplementedInstruction(state); break;
+        case 0x2b:          //DCX H
+            hl = (static_cast<uint16_t>(state->h) << 8) | state->l;
+            hl-=1;
+            state->h = (hl >> 8) & 0xff;
+            state->l = hl & 0xff;
+            break;
+        case 0x2c:          //INR L
+            answer = static_cast<uint16_t> (state->l) + 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->l = answer & 0xff;
+            break;
+        case 0x2d:          //DCR L
+            answer = static_cast<uint16_t> (state->l) - 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->l = answer & 0xff;
+            break;
         case 0x2e: UnimplementedInstruction(state); break;
         case 0x2f: UnimplementedInstruction(state); break;
         case 0x30: UnimplementedInstruction(state); break;
@@ -125,16 +231,52 @@ int Emulate8080Op(State8080* state) {
             state->sp+=1;
             break;
         case 0x33: UnimplementedInstruction(state); break;
-        case 0x34: UnimplementedInstruction(state); break;
-        case 0x35: UnimplementedInstruction(state); break;
+        case 0x34:          //INR M
+            offset = (state->h << 8) | (state->l);
+            answer = static_cast<uint16_t> (state->memory[offset]) + 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->h = (answer >> 8) & 0xff;
+            state->l = answer & 0xff;
+            break;
+        case 0x35:          //DCR M
+            offset = (state->h << 8) | (state->l);
+            answer = static_cast<uint16_t> (state->memory[offset]) - 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->h = (answer >> 8) & 0xff;
+            state->l = answer & 0xff;
+            break;
         case 0x36: UnimplementedInstruction(state); break;
         case 0x37: UnimplementedInstruction(state); break;
         case 0x38: UnimplementedInstruction(state); break;
-        case 0x39: UnimplementedInstruction(state); break;
+        case 0x39:          //DAD SP
+            hl = (static_cast<uint16_t>(state->h) << 8) | state->l;
+            hl += state->sp;
+            state->cc.cy = (hl>0xff);
+            state->h = (hl >> 8) & 0xff;
+            state->l = hl & 0xff;
+            break;
         case 0x3a: UnimplementedInstruction(state); break;
-        case 0x3b: UnimplementedInstruction(state); break;
-        case 0x3c: UnimplementedInstruction(state); break;
-        case 0x3d: UnimplementedInstruction(state); break;
+        case 0x3b:          //DCX SP
+            state->sp-=1;
+            break;
+        case 0x3c:          //INR A
+            answer = static_cast<uint16_t> (state->a) + 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0x3d:          //DCR A
+            answer = static_cast<uint16_t> (state->a) - 1;
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
         case 0x3e: UnimplementedInstruction(state); break;
         case 0x3f: UnimplementedInstruction(state); break;
         case 0x40: UnimplementedInstruction(state); break;
@@ -461,30 +603,201 @@ int Emulate8080Op(State8080* state) {
             state->cc.p = Parity(answer&0xff);
             state->a = answer & 0xff;
             break;
-        case 0xa0: UnimplementedInstruction(state); break;
-        case 0xa1: UnimplementedInstruction(state); break;
-        case 0xa2: UnimplementedInstruction(state); break;
-        case 0xa3: UnimplementedInstruction(state); break;
-        case 0xa4: UnimplementedInstruction(state); break;
-        case 0xa5: UnimplementedInstruction(state); break;
-        case 0xa6: UnimplementedInstruction(state); break;
-        case 0xa7: UnimplementedInstruction(state); break;
-        case 0xa8: UnimplementedInstruction(state); break;
-        case 0xa9: UnimplementedInstruction(state); break;
-        case 0xaa: UnimplementedInstruction(state); break;
-        case 0xab: UnimplementedInstruction(state); break;
-        case 0xac: UnimplementedInstruction(state); break;
-        case 0xad: UnimplementedInstruction(state); break;
-        case 0xae: UnimplementedInstruction(state); break;
-        case 0xaf: UnimplementedInstruction(state); break;
-        case 0xb0: UnimplementedInstruction(state); break;
-        case 0xb1: UnimplementedInstruction(state); break;
-        case 0xb2: UnimplementedInstruction(state); break;
-        case 0xb3: UnimplementedInstruction(state); break;
-        case 0xb4: UnimplementedInstruction(state); break;
-        case 0xb5: UnimplementedInstruction(state); break;
-        case 0xb6: UnimplementedInstruction(state); break;
-        case 0xb7: UnimplementedInstruction(state); break;
+        case 0xa0:      //ANA B
+            answer = static_cast<uint16_t> (state->a) & static_cast<uint16_t> (state->b);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xa1:          //ANA C
+            answer = static_cast<uint16_t> (state->a) & static_cast<uint16_t> (state->c);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xa2:          //ANA D
+            answer = static_cast<uint16_t> (state->a) & static_cast<uint16_t> (state->d);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xa3:          //ANA E
+            answer = static_cast<uint16_t> (state->a) & static_cast<uint16_t> (state->e);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xa4:          //ANA H
+            answer = static_cast<uint16_t> (state->a) & static_cast<uint16_t> (state->h);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xa5:          //ANA L
+            answer = static_cast<uint16_t> (state->a) & static_cast<uint16_t> (state->l);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xa6:          //ANA M
+            offset = (state->h << 8) | (state->l);
+            answer = static_cast<uint16_t> (state->a) & static_cast<uint16_t> (state->memory[offset]);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xa7:          //ANA A
+            answer = static_cast<uint16_t> (state->a) & static_cast<uint16_t> (state->a);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xa8:          //XRA B
+            answer = static_cast<uint16_t> (state->a) ^ static_cast<uint16_t> (state->b);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xa9:          //XRA C
+            answer = static_cast<uint16_t> (state->a) ^ static_cast<uint16_t> (state->c);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xaa:          //XRA D
+            answer = static_cast<uint16_t> (state->a) ^ static_cast<uint16_t> (state->d);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xab:          //XRA E
+            answer = static_cast<uint16_t> (state->a) ^ static_cast<uint16_t> (state->e);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xac:          //XRA H
+            answer = static_cast<uint16_t> (state->a) ^ static_cast<uint16_t> (state->h);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xad:          //XRA L
+            answer = static_cast<uint16_t> (state->a) ^ static_cast<uint16_t> (state->l);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xae:          //XRA M
+            offset = (state->h << 8) | (state->l);
+            answer = static_cast<uint16_t> (state->a) ^ static_cast<uint16_t> (state->memory[offset]);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xaf:          //XRA A
+            answer = static_cast<uint16_t> (state->a) ^ static_cast<uint16_t> (state->a);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xb0:          //ORA B
+            answer = static_cast<uint16_t> (state->a) | static_cast<uint16_t> (state->b);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xb1:          //ORA C
+            answer = static_cast<uint16_t> (state->a) | static_cast<uint16_t> (state->c);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xb2:          //ORA D
+            answer = static_cast<uint16_t> (state->a) | static_cast<uint16_t> (state->d);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xb3:          //ORA E
+            answer = static_cast<uint16_t> (state->a) | static_cast<uint16_t> (state->e);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xb4:          //ORA H
+            answer = static_cast<uint16_t> (state->a) | static_cast<uint16_t> (state->h);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xb5:          //ORA L
+            answer = static_cast<uint16_t> (state->a) | static_cast<uint16_t> (state->l);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xb6:          //ORA M
+            offset = (state->h << 8) | (state->l);
+            answer = static_cast<uint16_t> (state->a) | static_cast<uint16_t> (state->memory[offset]);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
+        case 0xb7:          //ORA A
+            answer = static_cast<uint16_t> (state->a) | static_cast<uint16_t> (state->a);
+            state->cc.z = ((answer & 0xff) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xff);
+            state->cc.p = Parity(answer&0xff);
+            state->a = answer & 0xff;
+            break;
         case 0xb8: UnimplementedInstruction(state); break;
         case 0xb9: UnimplementedInstruction(state); break;
         case 0xba: UnimplementedInstruction(state); break;
