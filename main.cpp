@@ -1009,7 +1009,12 @@ int Emulate8080Op(State8080* state) {
             state->cc.p = Parity(answer&0xff);
             state->a = answer & 0xff;
             break;
-        case 0xc7: UnimplementedInstruction(state); break;
+        case 0xc7:          //RST 0
+            state->memory[state->sp - 1] = (state->pc >> 8) & 0xFF;
+            state->memory[state->sp - 2] = state->pc & 0xFF;
+            state->sp -= 2;
+            state->pc = 0;
+            break;
         case 0xc8:          //RZ
             if (state->cc.z == 1) {
                 state->pc = state->memory[state->sp] | (state->memory[state->sp + 1] << 8);
@@ -1055,7 +1060,12 @@ int Emulate8080Op(State8080* state) {
             state->cc.p = Parity(answer&0xff);
             state->a = answer & 0xff;
             break;
-        case 0xcf: UnimplementedInstruction(state); break;
+        case 0xcf:          //RST 1
+            state->memory[state->sp - 1] = (state->pc >> 8) & 0xFF;
+            state->memory[state->sp - 2] = state->pc & 0xFF;
+            state->sp -= 2;
+            state->pc = 8;
+            break;
         case 0xd0:          //RNC address
             if (state->cc.cy == 0) {
                 state->pc = state->memory[state->sp] | (state->memory[state->sp+1] << 8);
@@ -1087,7 +1097,12 @@ int Emulate8080Op(State8080* state) {
             state->cc.p = Parity(answer&0xff);
             state->a = answer & 0xff;
             break;
-        case 0xd7: UnimplementedInstruction(state); break;
+        case 0xd7:          //RST 2
+            state->memory[state->sp - 1] = (state->pc >> 8) & 0xFF;
+            state->memory[state->sp - 2] = state->pc & 0xFF;
+            state->sp -= 2;
+            state->pc = 16;
+            break;
         case 0xd8:          //RC
             if (state->cc.cy == 1) {
                 state->pc = state->memory[state->sp] | (state->memory[state->sp+1] << 8);
@@ -1117,7 +1132,12 @@ int Emulate8080Op(State8080* state) {
             break;
         case 0xdd: UnimplementedInstruction(state); break;
         case 0xde: UnimplementedInstruction(state); break;
-        case 0xdf: UnimplementedInstruction(state); break;
+        case 0xdf:          //RST 3
+            state->memory[state->sp - 1] = (state->pc >> 8) & 0xFF;
+            state->memory[state->sp - 2] = state->pc & 0xFF;
+            state->sp -= 2;
+            state->pc = 24;
+            break;
         case 0xe0:          //RPO
             if (state->cc.p == 0) {
                 state->pc = state->memory[state->sp] | (state->memory[state->sp+1] << 8);
@@ -1147,14 +1167,21 @@ int Emulate8080Op(State8080* state) {
             break;
         case 0xe5: UnimplementedInstruction(state); break;
         case 0xe6: UnimplementedInstruction(state); break;
-        case 0xe7: UnimplementedInstruction(state); break;
+        case 0xe7:          //RST 4
+            state->memory[state->sp - 1] = (state->pc >> 8) & 0xFF;
+            state->memory[state->sp - 2] = state->pc & 0xFF;
+            state->sp -= 2;
+            state->pc = 32;
+            break;
         case 0xe8:          //RPE
             if (state->cc.p == 1)
                 state->pc = state->memory[state->sp] | (state->memory[state->sp+1] << 8);
 
             state->pc+=2;
             break;
-        case 0xe9: UnimplementedInstruction(state); break;
+        case 0xe9:          //PCHL
+            state->pc = (static_cast<uint16_t>(state->h) << 8) | state->l;
+            break;
         case 0xea:          //JPE address
             if (state->cc.p == 1)
                 state->pc = (opcode[2] << 8) | opcode[1];
@@ -1175,7 +1202,12 @@ int Emulate8080Op(State8080* state) {
             break;
         case 0xed: UnimplementedInstruction(state); break;
         case 0xee: UnimplementedInstruction(state); break;
-        case 0xef: UnimplementedInstruction(state); break;
+        case 0xef:          //RST 5
+            state->memory[state->sp - 1] = (state->pc >> 8) & 0xFF;
+            state->memory[state->sp - 2] = state->pc & 0xFF;
+            state->sp -= 2;
+            state->pc = 40;
+            break;
         case 0xf0:          //RP address
             if (state->cc.s == 0)
                 state->pc = state->memory[state->sp] | (state->memory[state->sp+1] << 8);
@@ -1203,7 +1235,12 @@ int Emulate8080Op(State8080* state) {
             break;
         case 0xf5: UnimplementedInstruction(state); break;
         case 0xf6: UnimplementedInstruction(state); break;
-        case 0xf7: UnimplementedInstruction(state); break;
+        case 0xf7:          //RST 6
+            state->memory[state->sp - 1] = (state->pc >> 8) & 0xFF;
+            state->memory[state->sp - 2] = state->pc & 0xFF;
+            state->sp -= 2;
+            state->pc = 48;
+            break;
         case 0xf8:          //RM state
             if (state->cc.s == 1)
                 state->pc = state->memory[state->sp] | (state->memory[state->sp+1] << 8);
@@ -1229,9 +1266,15 @@ int Emulate8080Op(State8080* state) {
             else
                 state->pc+=2;
             break;
-        case 0xfd: UnimplementedInstruction(state); break;
+        case 0xfd:          //NO INSTRUCTION
+            break;
         case 0xfe: UnimplementedInstruction(state); break;
-        case 0xff: UnimplementedInstruction(state); break;
+        case 0xff:          //RST 7
+            state->memory[state->sp - 1] = (state->pc >> 8) & 0xFF;
+            state->memory[state->sp - 2] = state->pc & 0xFF;
+            state->sp -= 2;
+            state->pc = 56;
+            break;
         default:
             std::cout << "Error" << std::endl;
             break;
